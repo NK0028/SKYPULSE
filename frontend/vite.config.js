@@ -30,9 +30,17 @@ export default defineConfig({
         ],
       },
       workbox: {
+        // Default is 2 MB — raised to accommodate the Three.js
+        // globe / charts / map bundle chunks below
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5 MB
+
         runtimeCaching: [
           {
-            urlPattern: /^http:\/\/localhost:8000\/api\/.*/,
+            // Matches /api/ on ANY origin — works for both
+            // localhost:8000 in dev and the real Render URL
+            // in production, since the origin is dynamic
+            // (set via VITE_API_URL at build time).
+            urlPattern: ({ url }) => url.pathname.startsWith('/api/'),
             handler: 'NetworkFirst',
             options: {
               cacheName: 'skypulse-api-cache',
@@ -49,4 +57,23 @@ export default defineConfig({
       },
     }),
   ],
+
+  build: {
+    rollupOptions: {
+      output: {
+        // Split heavy libraries into their own chunks so the
+        // initial page load stays light — the globe, charts,
+        // and map only download when the user actually
+        // scrolls to those components.
+        manualChunks: {
+          'vendor-three'    : ['three', '@react-three/fiber', '@react-three/drei'],
+          'vendor-charts'   : ['recharts'],
+          'vendor-map'      : ['leaflet', 'react-leaflet'],
+          'vendor-pdf'      : ['jspdf', 'html2canvas-pro'],
+          'vendor-motion'   : ['framer-motion'],
+        },
+      },
+    },
+    chunkSizeWarningLimit: 1000, // silence the warning for intentional vendor chunks
+  },
 })
