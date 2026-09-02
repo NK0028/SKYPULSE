@@ -7,7 +7,7 @@
 
 import * as THREE from "three";
 
-const TILE_PROXY_BASE = "http://localhost:8000/api/weather/tile-proxy";
+const TILE_PROXY_BASE = `${import.meta.env.VITE_API_URL || "http://localhost:8000/api"}/weather/tile-proxy`;
 const TILE_SIZE = 256;
 
 // Cache built textures per layer so switching back is instant

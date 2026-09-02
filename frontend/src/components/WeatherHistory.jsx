@@ -12,7 +12,7 @@ import {
 import { useWeatherContext } from "../context/WeatherContext";
 import { formatTemp } from "../utils/formatters";
 
-const API = "http://localhost:8000/api";
+const API = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
 
 const CustomTooltip = ({ active, payload, isDark, unit }) => {
   if (!active || !payload?.length) return null;

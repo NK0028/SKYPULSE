@@ -9,7 +9,7 @@ import { useWeatherContext } from "../context/WeatherContext";
 import { formatTemp } from "../utils/formatters";
 import { getWeatherEmoji } from "../utils/weatherIcons";
 
-const API = "http://localhost:8000/api";
+const API = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
 const STORAGE_KEY = "skyPulseCommute";
 
 const CommuteWeather = () => {

@@ -9,7 +9,7 @@ import { useWeatherContext } from "../context/WeatherContext";
 import { formatTemp, formatDay } from "../utils/formatters";
 import { getWeatherEmoji } from "../utils/weatherIcons";
 
-const API = "http://localhost:8000/api";
+const API = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
 
 const getTravelAdvice = (forecast, travelDate) => {
   if (!forecast?.daily?.length) return null;

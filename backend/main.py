@@ -5,6 +5,7 @@
 #   Stack   : FastAPI | OpenWeatherMap | Python 3.11
 # ════════════════════════════════════════════════════════════════
 
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from routers import weather, forecast, air_quality, location
@@ -15,11 +16,22 @@ app = FastAPI(
     version     = "1.0.0"
 )
 
-# ── CORS — allow React frontend ───────────────
+# ── CORS — allow local dev + production frontend(s) ──
+# FRONTEND_URL is set as an environment variable on Railway
+# once the real Vercel domain is known, so no redeploy-and-guess
+# cycle is needed if the domain changes later.
+extra_origin = os.getenv("FRONTEND_URL")
+
+allow_origins = [
+    "http://localhost:5173",
+    "https://skypulse.vercel.app",
+]
+if extra_origin and extra_origin not in allow_origins:
+    allow_origins.append(extra_origin)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins     = ["http://localhost:5173",
-                         "https://skypulse.vercel.app"],
+    allow_origins     = allow_origins,
     allow_credentials = True,
     allow_methods     = ["*"],
     allow_headers     = ["*"],

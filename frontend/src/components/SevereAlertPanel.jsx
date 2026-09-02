@@ -10,7 +10,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useWeatherContext } from "../context/WeatherContext";
 import { cbColor } from "../utils/colorPalette";
 
-const API = "http://localhost:8000/api";
+const API = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
 
 const SEVERITY_COLOR = {
   Red:      "#ef4444",
