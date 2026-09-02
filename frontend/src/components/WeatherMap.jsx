@@ -1,6 +1,7 @@
 // ─────────────────────────────────────────────
 //  WeatherMap — Live layered weather map
 //  Fullscreen + Rain/Wind/Snow/Temp/Clouds layers
+//  Keyless dark basemap + backend-proxied tiles
 // ─────────────────────────────────────────────
 
 import { useState, useEffect, useCallback } from "react";
@@ -14,7 +15,9 @@ import { useWeather } from "../hooks/useWeather";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 
-const WEATHER_API_KEY = "9c1b04372a2848475277ace899bb2e7a";
+// Weather tiles are proxied through our own backend so the
+// OpenWeatherMap key is never exposed in the client bundle.
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
 
 // ── Fix default marker icon ───────────────────
 delete L.Icon.Default.prototype._getIconUrl;
@@ -114,19 +117,30 @@ const MapCore = ({
     style={{ height: "100%", width: "100%" }}
     zoomControl={true}
   >
+    {/* Basemap — Stadia Alidade Smooth Dark for dark mode,
+        plain OpenStreetMap for light mode. Both are keyless
+        for local dev; Stadia requires free domain registration
+        for production use (see note below the file).
+
+        Fully keyless dark alternative if you'd rather skip
+        registering a domain — swap the dark URL for:
+        https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png  */}
     <TileLayer
-      attribution="© OpenStreetMap"
+      attribution={isDark
+        ? "© Stadia Maps © OpenMapTiles © OpenStreetMap"
+        : "© OpenStreetMap"
+      }
       url={isDark
-        ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+        ? "https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png"
         : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       }
     />
 
-    {/* Active weather layer overlay */}
+    {/* Active weather layer overlay — via backend proxy */}
     {activeLayer && (
       <TileLayer
         key={activeLayer.id}
-        url={`https://tile.openweathermap.org/map/${activeLayer.tile}/{z}/{x}/{y}.png?appid=${WEATHER_API_KEY}`}
+        url={`${API_BASE}/weather/tile-proxy/${activeLayer.tile}/{z}/{x}/{y}.png`}
         opacity={0.6}
       />
     )}
