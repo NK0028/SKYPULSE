@@ -61,16 +61,39 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        // Split heavy libraries into their own chunks so the
-        // initial page load stays light — the globe, charts,
-        // and map only download when the user actually
-        // scrolls to those components.
-        manualChunks: {
-          'vendor-three'    : ['three', '@react-three/fiber', '@react-three/drei'],
-          'vendor-charts'   : ['recharts'],
-          'vendor-map'      : ['leaflet', 'react-leaflet'],
-          'vendor-pdf'      : ['jspdf', 'html2canvas-pro'],
-          'vendor-motion'   : ['framer-motion'],
+        // Rolldown (Vite 8's bundler) requires manualChunks to be
+        // a FUNCTION, not the object shorthand Rollup supports.
+        // This inspects each module's path and buckets heavy
+        // libraries into their own chunk, so the initial page
+        // load stays light and the globe/charts/map/PDF export
+        // only download when the user actually needs them.
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (
+              id.includes('three') ||
+              id.includes('@react-three')
+            ) {
+              return 'vendor-three'
+            }
+            if (id.includes('recharts')) {
+              return 'vendor-charts'
+            }
+            if (
+              id.includes('leaflet') &&
+              !id.includes('leaflet-')
+            ) {
+              return 'vendor-map'
+            }
+            if (
+              id.includes('jspdf') ||
+              id.includes('html2canvas')
+            ) {
+              return 'vendor-pdf'
+            }
+            if (id.includes('framer-motion')) {
+              return 'vendor-motion'
+            }
+          }
         },
       },
     },
