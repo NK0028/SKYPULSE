@@ -2,6 +2,12 @@
 //  useRainNotifications — Browser rain alerts
 //  Respects the user's notification preference
 //  set in the Settings panel
+//
+//  iOS Safari has no Notification API at all (not
+//  even as an unsupported stub) — every access to
+//  the bare `Notification` identifier must be
+//  guarded by the same "in window" check, or it
+//  throws a ReferenceError on iPhone specifically.
 // ─────────────────────────────────────────────
 
 import { useEffect, useRef } from "react";
@@ -18,12 +24,15 @@ const getRainPref = () => {
   }
 };
 
+const notificationsSupported = () =>
+  typeof window !== "undefined" && "Notification" in window;
+
 export const useRainNotifications = () => {
   const { current, forecast } = useWeatherContext();
   const notifiedRef = useRef(new Set());
 
   useEffect(() => {
-    if (!("Notification" in window)) return;
+    if (!notificationsSupported()) return;
     if (Notification.permission === "default") {
       Notification.requestPermission();
     }
@@ -31,6 +40,7 @@ export const useRainNotifications = () => {
 
   useEffect(() => {
     if (!forecast?.hourly?.length || !current) return;
+    if (!notificationsSupported()) return; // ← the missing guard
     if (Notification.permission !== "granted") return;
     if (!getRainPref()) return; // user disabled rain alerts in Settings
 
