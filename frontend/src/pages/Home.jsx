@@ -371,7 +371,6 @@ const Home = () => {
                       <CurrentWeather />
                       <WeatherDetails />
                       <FeelScore />
-                      <WeatherAlert />
                       <SevereAlertPanel />
                       <DailyDigest />
                       <SunriseSunset />
